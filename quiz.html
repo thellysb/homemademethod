@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cooking Clear - Personalized Quiz</title>
-  <meta name="description" content="Discover your personalized Cooking Clear hormonal weight loss plan for women 50+.">
+  <title>Cooking Clear - Personalized Metabolic Quiz</title>
+  <meta name="description" content="Take the official Cooking Clear quiz to get your personalized hormonal weight loss recipe plan for women 50+.">
   
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2377c26a'><path d='M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z'/></svg>" type="image/svg+xml">
@@ -12,9 +12,12 @@
   <!-- Fonts: Quicksand & Lato -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS -->
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -28,7 +31,8 @@
               blue: '#658ec9',
               lightBg: '#FFF7F0',
               accentOrange: '#F89A1F',
-              borderOrange: '#FBD0AA'
+              cardBg: '#FFFFFF',
+              grayBg: '#EDEDED'
             }
           },
           fontFamily: {
@@ -46,35 +50,52 @@
       background-color: #FFF7F0;
       color: #282828;
       -webkit-font-smoothing: antialiased;
+      user-select: none;
     }
     .quiz-card {
       background-color: #ffffff;
       border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
-    .option-btn {
-      transition: all 0.2s ease;
+    .opt-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       border: 2px solid transparent;
       background-color: #ffffff;
+      cursor: pointer;
     }
-    .option-btn:hover {
+    .opt-card:hover {
       border-color: #77c26a;
-      transform: translateY(-1px);
+      transform: translateY(-1.5px);
     }
-    .option-btn.selected {
+    .opt-card.selected {
       border-color: #77c26a;
       background-color: #f2f9f0;
       font-weight: 700;
+    }
+    .opt-card.selected .check-icon {
+      border-color: #77c26a;
+      background-color: #77c26a;
+      color: white;
+    }
+    .dish-slider-img {
+      transition: transform 0.4s ease;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
-  <!-- Header -->
-  <header class="w-full bg-[#FFF7F0] pt-4 pb-2 px-4 sm:px-6">
+  <!-- ================= TOP NAVIGATION / HEADER ================= -->
+  <header class="w-full bg-[#FFF7F0] pt-4 pb-2 px-4 sm:px-6 sticky top-0 z-40">
     <div class="max-w-xl mx-auto flex items-center justify-between">
       
-      <!-- Logo: Cooking Clear -->
+      <!-- Back Button -->
+      <button id="btn-back" onclick="prevScreen()" class="text-brand-navy p-2 rounded-full hover:bg-black/5 transition invisible" aria-label="Go back">
+        <svg class="w-6 h-6 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Brand Logo: Cooking Clear -->
       <a href="index.html" class="flex items-center space-x-2">
         <div class="w-9 h-9 rounded-xl bg-brand-green/10 flex items-center justify-center text-brand-green shadow-sm">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -88,150 +109,194 @@
       </a>
 
       <!-- Progress bar -->
-      <div id="progress-container" class="w-32 sm:w-44 bg-gray-200 h-2.5 rounded-full overflow-hidden hidden">
-        <div id="progress-bar" class="bg-brand-green h-full w-0 transition-all duration-300 rounded-full"></div>
+      <div id="progress-wrapper" class="w-28 sm:w-36 bg-gray-200 h-2 rounded-full overflow-hidden">
+        <div id="quiz-progress-bar" class="bg-brand-green h-full w-2 transition-all duration-300 rounded-full"></div>
       </div>
     </div>
   </header>
 
-  <!-- Quiz Container -->
+  <!-- ================= QUIZ MAIN CONTAINER ================= -->
   <main class="flex-grow flex items-center justify-center px-4 py-6">
     <div class="w-full max-w-xl">
 
-      <!-- ================= STEP 1: WELCOME & PROOF ================= -->
-      <div id="step-1" class="quiz-step text-center space-y-6">
-        <div class="p-6 sm:p-8">
-          <p class="text-2xl sm:text-3xl font-bold leading-snug text-brand-navy">
+      <!-- ================= 1. DISCOVER ================= -->
+      <div id="screen-discover" class="quiz-screen text-center space-y-6">
+        <div class="p-4 sm:p-6 space-y-6">
+          <blockquote class="text-2xl sm:text-3xl font-extrabold text-brand-navy leading-snug">
             “I put my scale in the closet and took a leap of faith - best decision I ever made.”
-          </p>
-          <div class="my-6 flex justify-center">
-            <img src="https://homemademethod.com/wp-content/uploads/2021/11/bev-1.jpg" alt="Georgine" class="w-full max-w-sm h-64 object-cover rounded-2xl shadow-md">
+          </blockquote>
+          
+          <div class="flex justify-center">
+            <img src="https://homemademethod.com/wp-content/uploads/2021/11/bev-1.jpg" alt="Georgine" class="w-full max-w-sm h-64 object-cover rounded-3xl shadow-md">
           </div>
-          <h2 class="text-xl font-bold text-gray-800">
-            Georgine, 69, lost 35+ lbs <span class="text-gray-600 font-normal">and got all her blood numbers normal</span> - <span class="text-brand-green">just by cooking!</span>
+
+          <h2 class="text-lg sm:text-xl font-bold text-gray-800 leading-normal">
+            Georgine, 69, lost 35+ lbs <span class="text-gray-600 font-normal">and got all her blood numbers normal</span> - <span class="text-brand-green font-extrabold">just by cooking!</span>
           </h2>
-          <button onclick="nextStep(2)" class="w-full mt-6 bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition transform hover:-translate-y-0.5">
+
+          <button onclick="goToScreen('welcome')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition transform hover:-translate-y-0.5 active:translate-y-0">
             Show me how!
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 2: STANFORD METHOD INTRO ================= -->
-      <div id="step-2" class="quiz-step hidden text-center space-y-6">
-        <div class="quiz-card p-6 sm:p-8">
+      <!-- ================= 2. WELCOME ================= -->
+      <div id="screen-welcome" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
           <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
             A Stanford Created <br><span class="text-brand-green">Cooking Method</span>
           </h2>
           <p class="text-gray-600 text-lg">
             We help women 50+ lose weight and get healthy - without diets or drugs.
           </p>
-          <div class="grid grid-cols-2 gap-4 py-4">
+
+          <div class="grid grid-cols-2 gap-4 py-2">
             <div class="bg-brand-lightBg p-4 rounded-2xl text-center border border-amber-100">
-              <span class="block text-2xl font-black text-brand-navy">63,211</span>
-              <span class="text-xs text-gray-500 font-bold uppercase">Women Transformed</span>
+              <span class="block text-3xl font-black text-brand-navy">63,211</span>
+              <span class="text-xs text-gray-500 font-bold uppercase mt-1 block">Women Transformed</span>
             </div>
             <div class="bg-brand-lightBg p-4 rounded-2xl text-center border border-amber-100">
-              <span class="block text-2xl font-black text-brand-green">4.8 ★</span>
-              <span class="text-xs text-gray-500 font-bold uppercase">App Store Rating</span>
+              <span class="block text-3xl font-black text-brand-green">4.8 ★</span>
+              <span class="text-xs text-gray-500 font-bold uppercase mt-1 block">App Rating</span>
             </div>
           </div>
+
           <p class="text-sm font-semibold text-gray-500">
             Every woman is different, so let's build your personalized eating plan for natural fat loss!
           </p>
-          <button onclick="nextStep(3)" class="w-full mt-4 bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+
+          <button onclick="goToScreen('after_glp1_1')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
             Continue
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 3: GLP-1 SCIENCE ================= -->
-      <div id="step-3" class="quiz-step hidden text-center space-y-6">
+      <!-- ================= 3. AFTER GLP-1 ================= -->
+      <div id="screen-after_glp1_1" class="quiz-screen hidden text-center space-y-6">
         <div class="quiz-card p-6 sm:p-8 space-y-5">
           <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
             Natural GLP-1 Activation
           </h2>
           <p class="text-base sm:text-lg text-gray-700 leading-relaxed text-left">
-            GLP-1 is a hormone naturally produced in your gut. It makes you feel full, crushes cravings and balances blood sugar. 
+            GLP-1 is a hormone naturally produced in your gut. It makes you feel full, crushes cravings and balances blood sugar.
           </p>
           <div class="bg-brand-lightBg p-5 rounded-2xl text-left border border-brand-borderOrange">
-            <p class="text-brand-navy font-bold text-base">
+            <p class="text-brand-navy font-bold text-base leading-relaxed">
               This means your body can already do what Ozempic tries to do - <span class="text-brand-blue font-black underline">without drugs!</span>
             </p>
           </div>
-          <button onclick="nextStep(4)" class="w-full mt-4 bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          <button onclick="goToScreen('lose_weight')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
             Next
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 4: BIGGEST CHALLENGE ================= -->
-      <div id="step-4" class="quiz-step hidden space-y-6">
-        <div class="text-center space-y-2">
-          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
-            What’s your biggest health challenge right now?
-          </h2>
-          <p class="text-sm text-gray-500">Select the main goal that matters most to you</p>
-        </div>
-        <div class="space-y-3">
-          <button onclick="selectGoal('Lose weight and feel more confident', 5)" class="option-btn w-full text-left p-4 sm:p-5 rounded-2xl shadow-sm font-bold text-base sm:text-lg flex items-center justify-between">
-            <span>🏃‍♀️ Lose weight and feel more confident</span>
-            <span class="text-brand-green">➔</span>
-          </button>
-          <button onclick="selectGoal('Reverse diabetes / pre-diabetes', 5)" class="option-btn w-full text-left p-4 sm:p-5 rounded-2xl shadow-sm font-bold text-base sm:text-lg flex items-center justify-between">
-            <span>🩺 Reverse diabetes / pre-diabetes</span>
-            <span class="text-brand-green">➔</span>
-          </button>
-          <button onclick="selectGoal('Lower high blood pressure / cholesterol', 5)" class="option-btn w-full text-left p-4 sm:p-5 rounded-2xl shadow-sm font-bold text-base sm:text-lg flex items-center justify-between">
-            <span>❤️ Lower high blood pressure / cholesterol</span>
-            <span class="text-brand-green">➔</span>
-          </button>
-          <button onclick="selectGoal('Feel more energetic and pain free', 5)" class="option-btn w-full text-left p-4 sm:p-5 rounded-2xl shadow-sm font-bold text-base sm:text-lg flex items-center justify-between">
-            <span>⚡ Feel more energetic and pain free</span>
-            <span class="text-brand-green">➔</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ================= STEP 5: HEIGHT ================= -->
-      <div id="step-5" class="quiz-step hidden space-y-6">
-        <div class="text-center space-y-2">
-          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
-            What is your height?
-          </h2>
-          <p class="text-sm text-gray-500">This helps us accurately calculate your metabolic baseline</p>
-        </div>
+      <!-- ================= 4. LOSE WEIGHT INTRO ================= -->
+      <div id="screen-lose_weight" class="quiz-screen hidden text-center space-y-6">
         <div class="quiz-card p-6 sm:p-8 space-y-6">
-          <div class="flex justify-center space-x-4">
-            <button id="btn-unit-ft" onclick="switchHeightUnit('ft')" class="px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white">ft &amp; in</button>
-            <button id="btn-unit-cm" onclick="switchHeightUnit('cm')" class="px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700">cm</button>
-          </div>
-          
-          <div id="height-ft-inputs" class="flex justify-center space-x-4">
-            <div class="text-center">
-              <input type="number" id="input-ft" value="5" min="3" max="7" class="w-20 text-center text-2xl font-bold border-b-2 border-brand-navy pb-1 focus:border-brand-green outline-none">
-              <span class="block text-xs font-bold text-gray-400 mt-1">FT</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            How It Works
+          </h2>
+          <div class="space-y-3">
+            <div class="bg-brand-lightBg p-4 rounded-2xl flex items-center space-x-3 text-left">
+              <span class="text-2xl">🥗</span>
+              <div>
+                <h4 class="font-bold text-brand-navy text-sm">Delicious Grocery Foods</h4>
+                <p class="text-xs text-gray-500">No calorie counting, no meal replacements</p>
+              </div>
             </div>
-            <div class="text-center">
-              <input type="number" id="input-in" value="5" min="0" max="11" class="w-20 text-center text-2xl font-bold border-b-2 border-brand-navy pb-1 focus:border-brand-green outline-none">
-              <span class="block text-xs font-bold text-gray-400 mt-1">IN</span>
+            <div class="bg-brand-lightBg p-4 rounded-2xl flex items-center space-x-3 text-left">
+              <span class="text-2xl">🧬</span>
+              <div>
+                <h4 class="font-bold text-brand-navy text-sm">Fix Hunger Hormones</h4>
+                <p class="text-xs text-gray-500">Naturally signal fullness to your metabolism</p>
+              </div>
+            </div>
+            <div class="bg-brand-lightBg p-4 rounded-2xl flex items-center space-x-3 text-left">
+              <span class="text-2xl">✨</span>
+              <div>
+                <h4 class="font-bold text-brand-navy text-sm">Lasting Results</h4>
+                <p class="text-xs text-gray-500">Keep the weight off without constant discipline</p>
+              </div>
             </div>
           </div>
-
-          <div id="height-cm-inputs" class="hidden flex justify-center">
-            <div class="text-center">
-              <input type="number" id="input-cm" value="165" min="100" max="230" class="w-28 text-center text-2xl font-bold border-b-2 border-brand-navy pb-1 focus:border-brand-green outline-none">
-              <span class="block text-xs font-bold text-gray-400 mt-1">CM</span>
-            </div>
-          </div>
-
-          <button onclick="nextStep(6)" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          <p class="text-sm font-semibold text-gray-500">
+            Every woman is different, so let's customize your profile!
+          </p>
+          <button onclick="goToScreen('health_challenge')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
             Continue
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 6: CURRENT WEIGHT & BMI ================= -->
-      <div id="step-6" class="quiz-step hidden space-y-6">
+      <!-- ================= 5. HEALTH CHALLENGE ================= -->
+      <div id="screen-health_challenge" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            What’s your biggest health challenge right now?
+          </h2>
+          <p class="text-sm text-gray-500">Select the goal that matters most to you</p>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('health_challenge', 'Lose weight and feel more confident', 'height')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-base sm:text-lg">🏃‍♀️ Lose weight and feel more confident</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('health_challenge', 'Reverse diabetes / pre-diabetes', 'height')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-base sm:text-lg">🩺 Reverse diabetes / pre-diabetes</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('health_challenge', 'Lower high blood pressure / cholesterol', 'height')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-base sm:text-lg">❤️ Lower high blood pressure / cholesterol</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('health_challenge', 'Feel more energetic', 'height')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-base sm:text-lg">⚡ Feel more energetic</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 6. HEIGHT ================= -->
+      <div id="screen-height" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            What is your height?
+          </h2>
+          <p class="text-sm text-gray-500">This helps us calculate your metabolic baseline accurately</p>
+        </div>
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <div class="flex justify-center space-x-3">
+            <button id="tab-ht-ft" onclick="setHeightUnit('ft')" class="px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white">ft &amp; in</button>
+            <button id="tab-ht-cm" onclick="setHeightUnit('cm')" class="px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700">cm</button>
+          </div>
+
+          <div id="box-ht-ft" class="flex justify-center space-x-4">
+            <div class="text-center">
+              <input type="number" id="val-ft" value="5" min="3" max="7" class="w-20 text-center text-3xl font-bold border-b-2 border-brand-navy pb-1 outline-none">
+              <span class="block text-xs font-bold text-gray-400 mt-1">FT</span>
+            </div>
+            <div class="text-center">
+              <input type="number" id="val-in" value="5" min="0" max="11" class="w-20 text-center text-3xl font-bold border-b-2 border-brand-navy pb-1 outline-none">
+              <span class="block text-xs font-bold text-gray-400 mt-1">IN</span>
+            </div>
+          </div>
+
+          <div id="box-ht-cm" class="hidden flex justify-center">
+            <div class="text-center">
+              <input type="number" id="val-cm" value="165" min="100" max="230" class="w-28 text-center text-3xl font-bold border-b-2 border-brand-navy pb-1 outline-none">
+              <span class="block text-xs font-bold text-gray-400 mt-1">CM</span>
+            </div>
+          </div>
+
+          <button onclick="goToScreen('weight')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 7. CURRENT WEIGHT & LIVE BMI ================= -->
+      <div id="screen-weight" class="quiz-screen hidden space-y-6">
         <div class="text-center space-y-2">
           <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
             What’s your current weight?
@@ -239,291 +304,927 @@
           <p class="text-sm text-gray-500">We've worked with women starting at over 400 pounds. No shame here.</p>
         </div>
         <div class="quiz-card p-6 sm:p-8 space-y-6">
-          <div class="flex justify-center space-x-4">
-            <button id="btn-weight-lbs" onclick="switchWeightUnit('lbs')" class="px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white">lbs</button>
-            <button id="btn-weight-kg" onclick="switchWeightUnit('kg')" class="px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700">kg</button>
+          <div class="flex justify-center space-x-3">
+            <button id="tab-wt-lbs" onclick="setWeightUnit('lbs')" class="px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white">lbs</button>
+            <button id="tab-wt-kg" onclick="setWeightUnit('kg')" class="px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700">kg</button>
           </div>
 
           <div class="text-center">
-            <input type="number" id="input-current-weight" value="180" oninput="calculateBMI()" class="w-32 text-center text-4xl font-black border-b-2 border-brand-navy pb-2 focus:border-brand-green outline-none">
-            <span id="label-weight-unit" class="block text-sm font-bold text-gray-400 mt-2">LBS</span>
+            <input type="number" id="val-cur-weight" value="180" oninput="runBmiCalculation()" class="w-32 text-center text-4xl font-black border-b-2 border-brand-navy pb-2 outline-none">
+            <span id="unit-cur-label" class="block text-sm font-bold text-gray-400 mt-2">LBS</span>
           </div>
 
-          <!-- BMI Dynamic Box -->
-          <div id="bmi-box" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-center text-sm font-semibold text-gray-700">
+          <div id="box-bmi-feedback" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center text-sm font-semibold text-gray-700">
             Calculating BMI...
           </div>
 
-          <button onclick="nextStep(7)" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          <button onclick="goToScreen('target')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
             Continue
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 7: GOAL WEIGHT ================= -->
-      <div id="step-7" class="quiz-step hidden space-y-6">
+      <!-- ================= 8. GOAL WEIGHT ================= -->
+      <div id="screen-target" class="quiz-screen hidden space-y-6">
         <div class="text-center space-y-2">
           <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
-            What is your goal weight?
+            What's your goal weight?
           </h2>
           <p class="text-sm text-gray-500">What would make you feel light, energetic and confident?</p>
         </div>
         <div class="quiz-card p-6 sm:p-8 space-y-6">
           <div class="text-center">
-            <input type="number" id="input-goal-weight" value="145" oninput="calculateGoalLoss()" class="w-32 text-center text-4xl font-black border-b-2 border-brand-navy pb-2 focus:border-brand-green outline-none">
-            <span id="label-goal-unit" class="block text-sm font-bold text-gray-400 mt-2">LBS</span>
+            <input type="number" id="val-goal-weight" value="145" oninput="runGoalCalculation()" class="w-32 text-center text-4xl font-black border-b-2 border-brand-navy pb-2 outline-none">
+            <span id="unit-goal-label" class="block text-sm font-bold text-gray-400 mt-2">LBS</span>
           </div>
 
-          <div id="goal-result-box" class="p-4 rounded-xl bg-green-50 border border-green-200 text-center text-base font-bold text-brand-green">
+          <div id="box-goal-feedback" class="p-4 rounded-2xl bg-green-50 border border-green-200 text-center text-base font-bold text-brand-green">
             You will lose 35 lbs (19.4% of your body weight).
           </div>
 
-          <button onclick="nextStep(8)" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          <button onclick="goToScreen('main_reason_for_wanting')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
             Continue
           </button>
         </div>
       </div>
 
-      <!-- ================= STEP 8: DISH PREFERENCES ================= -->
-      <div id="step-8" class="quiz-step hidden space-y-6 text-center">
-        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
-          What do you think of these meals?
-        </h2>
-        <p class="text-sm text-gray-500">We craft your weekly menus around foods you genuinely love</p>
-        
-        <div class="quiz-card p-6 space-y-4">
-          <img src="https://homemademethod.com/wp-content/uploads/2025/10/baconeggs.png" alt="Meal" class="w-full h-52 object-cover rounded-2xl shadow-sm">
-          <h3 class="text-xl font-bold text-brand-navy">Delicious Bacon, Eggs &amp; Veggie Plate</h3>
-          
-          <div class="grid grid-cols-2 gap-4 pt-2">
-            <button onclick="nextStep(9)" class="py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full transition">
-              Not for me
-            </button>
-            <button onclick="nextStep(9)" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">
-              Love it! 😋
-            </button>
+      <!-- ================= 9. MAIN REASONS (MULTIPLE) ================= -->
+      <div id="screen-main_reason_for_wanting" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            What are your main reasons for wanting to lose weight?
+          </h2>
+          <p class="text-sm text-gray-500">Select all that apply</p>
+        </div>
+        <div class="space-y-3">
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-sm sm:text-base">Lower high blood sugar</span>
+            <div class="check-icon w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center text-xs">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-sm sm:text-base">Lower high blood pressure</span>
+            <div class="check-icon w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center text-xs">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-sm sm:text-base">Lower high cholesterol</span>
+            <div class="check-icon w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center text-xs">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-sm sm:text-base">Feel more confident</span>
+            <div class="check-icon w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center text-xs">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <span class="font-bold text-sm sm:text-base">Get your energy back!</span>
+            <div class="check-icon w-6 h-6 rounded-lg border-2 border-gray-300 flex items-center justify-center text-xs">✓</div>
+          </div>
+        </div>
+        <button onclick="goToScreen('hormonal_weight_loss')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          Continue
+        </button>
+      </div>
+
+      <!-- ================= 10. HORMONAL WEIGHT LOSS ================= -->
+      <div id="screen-hormonal_weight_loss" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-5">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Say hello to hormonal weight loss: <span class="text-brand-blue">simple, lasting and near-effortless</span>
+          </h2>
+          <p class="text-base text-gray-700 leading-relaxed text-left">
+            When GLP1 and other hunger hormones are blocked or imbalanced, you will always struggle with your weight - especially after menopause.
+          </p>
+          <div class="bg-brand-lightBg p-4 rounded-2xl text-left border border-amber-100">
+            <p class="text-brand-navy font-bold text-sm leading-relaxed">
+              The <strong class="text-brand-green font-black">Cooking Clear</strong> method gently resets your hunger hormones, so you burn fat naturally 🌿
+            </p>
+          </div>
+          <button onclick="goToScreen('loading_1')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Got it!
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 11. LOADING 1 (ANIMATED) ================= -->
+      <div id="screen-loading_1" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-8 sm:p-10 space-y-6">
+          <div class="w-20 h-20 border-4 border-gray-200 border-t-brand-green rounded-full animate-spin mx-auto"></div>
+          <h2 class="text-2xl font-black text-brand-navy">Analyzing your health &amp; weight goals...</h2>
+          <div class="space-y-2 text-sm text-gray-500 font-semibold">
+            <p id="l1-p1" class="text-brand-green font-bold">✓ Analyzing metabolic profile...</p>
+            <p id="l1-p2">Creating prediction based on your profile...</p>
+            <p id="l1-p3">Setting up your first goal...</p>
           </div>
         </div>
       </div>
 
-      <!-- ================= STEP 9: ANIMATED CALCULATION ================= -->
-      <div id="step-9" class="quiz-step hidden text-center space-y-8">
-        <div class="quiz-card p-8 sm:p-12 space-y-6">
-          <div class="relative w-28 h-28 mx-auto">
-            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" stroke="#E5E7EB" stroke-width="8" fill="none" />
-              <circle id="loading-circle" cx="50" cy="50" r="42" stroke="#77c26a" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" fill="none" class="transition-all duration-300" />
-            </svg>
-            <span id="loading-percentage" class="absolute inset-0 flex items-center justify-center text-2xl font-black text-brand-navy">0%</span>
-          </div>
-
-          <h2 id="loading-status-text" class="text-2xl font-extrabold text-brand-navy">
-            Analyzing your metabolic profile...
+      <!-- ================= 12. FIRST GOAL SETTING ================= -->
+      <div id="screen-first_goal_setting" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <span class="text-5xl block">🎉</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            First goal setting is completed!
           </h2>
+          <p id="first-goal-pred" class="text-lg font-bold text-brand-navy">
+            Based on your answers, we predict you'll <span class="text-brand-blue">lose 10 lbs in the next 28 days*</span>
+          </p>
+          <p class="text-sm text-brand-green font-bold">
+            *That's 1 full jeans size! 😍 👖
+          </p>
+          <button onclick="goToScreen('goal_without_plan')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
 
-          <div class="space-y-3 text-left max-w-sm mx-auto text-sm text-gray-600 font-semibold">
-            <div id="check-1" class="flex items-center space-x-2 text-gray-400">
-              <span>⚪</span> <span>Analyzing age and hormonal factors...</span>
+      <!-- ================= 13. GOAL WITHOUT PLAN ================= -->
+      <div id="screen-goal_without_plan" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            A goal without a plan is just a wish
+          </h2>
+          <p class="text-base text-gray-700 leading-relaxed">
+            The <strong class="text-brand-green">Cooking Clear</strong> method helps you activate hormonal fat loss... just by cooking easy, tasty meals. No diets, no restrictions.
+          </p>
+          <button onclick="goToScreen('dish_sandwich')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Create my recipe profile!
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 14-18. DISHES VOTING ================= -->
+      <div id="screen-dish_sandwich" class="quiz-screen hidden text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What do you think of this dish?</h2>
+        <div class="quiz-card p-6 space-y-4">
+          <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_24A7E5C5047B-1.jpeg" alt="Gourmet Sandwich" class="w-full h-56 object-cover rounded-2xl shadow-sm">
+          <h3 class="text-xl font-bold text-brand-navy">Avocado &amp; Roast Chicken Sandwich</h3>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="goToScreen('dish_bacon')" class="py-3.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-full transition">Not my taste</button>
+            <button onclick="goToScreen('dish_bacon')" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">Like it!</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-dish_bacon" class="quiz-screen hidden text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What do you think of this dish?</h2>
+        <div class="quiz-card p-6 space-y-4">
+          <img src="https://homemademethod.com/wp-content/uploads/2025/10/baconeggs.png" alt="Bacon &amp; Eggs" class="w-full h-56 object-cover rounded-2xl shadow-sm">
+          <h3 class="text-xl font-bold text-brand-navy">Bacon and Egg Cups</h3>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="goToScreen('dish_bean_salad')" class="py-3.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-full transition">Not my taste</button>
+            <button onclick="goToScreen('dish_bean_salad')" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">Like it!</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-dish_bean_salad" class="quiz-screen hidden text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What do you think of this dish?</h2>
+        <div class="quiz-card p-6 space-y-4">
+          <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_14F76C366500-1.jpeg" alt="Bean Salad" class="w-full h-56 object-cover rounded-2xl shadow-sm">
+          <h3 class="text-xl font-bold text-brand-navy">Mediterranean Bean &amp; Veggie Bowl</h3>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="goToScreen('dish_casserole')" class="py-3.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-full transition">Not my taste</button>
+            <button onclick="goToScreen('dish_casserole')" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">Like it!</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-dish_casserole" class="quiz-screen hidden text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What do you think of this dish?</h2>
+        <div class="quiz-card p-6 space-y-4">
+          <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_FF120F15B139-1.jpeg" alt="Casserole" class="w-full h-56 object-cover rounded-2xl shadow-sm">
+          <h3 class="text-xl font-bold text-brand-navy">Cheesy Beef &amp; Veggie Casserole</h3>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="goToScreen('dish_protein_salad')" class="py-3.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-full transition">Not my taste</button>
+            <button onclick="goToScreen('dish_protein_salad')" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">Like it!</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-dish_protein_salad" class="quiz-screen hidden text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What do you think of this dish?</h2>
+        <div class="quiz-card p-6 space-y-4">
+          <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_26B34285C473-1.jpeg" alt="Chef Salad" class="w-full h-56 object-cover rounded-2xl shadow-sm">
+          <h3 class="text-xl font-bold text-brand-navy">High-Protein Chef Salad with Herb Dressing</h3>
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <button onclick="goToScreen('cuisines')" class="py-3.5 bg-gray-200 hover:bg-gray-300 font-bold rounded-full transition">Not my taste</button>
+            <button onclick="goToScreen('cuisines')" class="py-3.5 bg-brand-green hover:bg-brand-greenHover text-white font-bold rounded-full transition shadow-md">Like it!</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 19. CUISINES (MULTIPLE) ================= -->
+      <div id="screen-cuisines" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What cuisines do you like?</h2>
+          <p class="text-sm text-gray-500">Choose as many as you'd like</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍔 American</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍝 Italian</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🌯 Mexican</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍗 Southern</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🥢 Asian</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🥗 Greek</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+        </div>
+        <button onclick="goToScreen('meals')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          Save my preferences
+        </button>
+      </div>
+
+      <!-- ================= 20. MEALS (MULTIPLE) ================= -->
+      <div id="screen-meals" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What meals do you like?</h2>
+          <p class="text-sm text-gray-500">Choose as many as you'd like</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍽️ Dinners</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🥞 Breakfasts</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🥪 Lunches</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍲 Soups &amp; Stews</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍰 Desserts</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🥨 Snacks</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+        </div>
+        <button onclick="goToScreen('experienced_in_kitchen')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          Save my preferences
+        </button>
+      </div>
+
+      <!-- ================= 21. EXPERIENCE IN KITCHEN ================= -->
+      <div id="screen-experienced_in_kitchen" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">How experienced are you in the kitchen?</h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('kitchen_exp', 'Love cooking', 'commit_to_cook')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🧑‍🍳 Love cooking</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('kitchen_exp', 'Sometimes cook', 'commit_to_cook')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍳 Sometimes cook</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('kitchen_exp', 'Beginner cook or eat out mostly', 'commit_to_cook')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🥢 I'm a beginner cook or eat out mostly</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 22. COMMIT TO COOK ================= -->
+      <div id="screen-commit_to_cook" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            How many easy recipes can you commit to cook per week to start fixing GLP-1?
+          </h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('commit', '1 - 2', 'great')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>1 - 2 recipes</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('commit', '3 - 4', 'great')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>3 - 4 recipes</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('commit', '5 or more', 'great')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>5 or more recipes</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 23. GREAT! (CAROUSEL NOTICE) ================= -->
+      <div id="screen-great" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <span class="text-5xl block">🎉</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Great!</h2>
+          <p class="text-lg font-bold text-brand-navy">
+            You will get 12 yummy fat-burning recipes <span class="text-brand-blue">every single week</span> to choose from 😋
+          </p>
+          <div class="flex justify-center space-x-3 overflow-hidden py-2">
+            <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_24A7E5C5047B-1.jpeg" class="w-24 h-24 object-cover rounded-xl shadow-sm" alt="recipe">
+            <img src="https://homemademethod.com/wp-content/uploads/2025/10/baconeggs.png" class="w-24 h-24 object-cover rounded-xl shadow-sm" alt="recipe">
+            <img src="https://homemademethod.com/wp-content/uploads/2025/10/IMG_FF120F15B139-1.jpeg" class="w-24 h-24 object-cover rounded-xl shadow-sm" alt="recipe">
+          </div>
+          <button onclick="goToScreen('personal_recipe_plan')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 24. PERSONAL RECIPE PLAN READY ================= -->
+      <div id="screen-personal_recipe_plan" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <span class="text-5xl block">🥳</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Your personal recipe plan for hormonal weight loss is ready!
+          </h2>
+          <p class="text-base text-gray-700 font-semibold">
+            No more tracking, going hungry, or giving up carbs!
+          </p>
+          <button onclick="triggerConfetti(); goToScreen('comes_losing_weight')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 25. MOTIVATION CHALLENGE ================= -->
+      <div id="screen-comes_losing_weight" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Is motivation and consistency a challenge for you when it comes to losing weight?
+          </h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('motivation', 'Yes always', 'medications_to_manage')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>Yes, always</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('motivation', 'Sometimes', 'medications_to_manage')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>Sometimes</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('motivation', 'Not really', 'medications_to_manage')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>Not really</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 26. MEDICATIONS ================= -->
+      <div id="screen-medications_to_manage" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Are you currently taking any medications to manage a chronic condition?
+          </h2>
+          <p class="text-sm text-gray-500">Like T2D, blood pressure, cholesterol, joint pain</p>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('meds', 'Yes multiple medications', 'get_the_support')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>Yes, multiple medications</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('meds', 'One medication', 'get_the_support')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>One medication</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('meds', 'Not currently on any meds', 'get_the_support')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>Not currently on any meds</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 27. GET THE SUPPORT ================= -->
+      <div id="screen-get_the_support" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Get the support you need</h2>
+          <p class="text-base text-gray-700 leading-relaxed">
+            Our Expert Coaches can answer all your questions, help you stay motivated and customize everything to your unique metabolism.
+          </p>
+          <button onclick="goToScreen('did_you_know')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 28. DID YOU KNOW ================= -->
+      <div id="screen-did_you_know" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Did you know?</h2>
+          <div class="bg-brand-lightBg p-5 rounded-2xl border border-orange-100">
+            <p class="text-base font-bold text-brand-navy leading-relaxed">
+              Women who lose weight as part of a group have a <strong class="text-brand-green text-xl font-black">70% higher chance</strong> of succeeding with their goals!
+            </p>
+          </div>
+          <button onclick="goToScreen('your_hobbies')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Match me with my group
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 29. HOBBIES (MULTIPLE) ================= -->
+      <div id="screen-your_hobbies" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What are your hobbies?</h2>
+          <p class="text-sm text-gray-500">Choose all that apply</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🍳 Cooking</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🚶 Walking / Hiking</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🌱 Gardening</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>📖 Reading</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>👶 Grandkids</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>✈️ Travel / Cruises</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+        </div>
+        <button onclick="goToScreen('crave_the_most')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          Continue
+        </button>
+      </div>
+
+      <!-- ================= 30. CRAVINGS ================= -->
+      <div id="screen-crave_the_most" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">What food do you crave the most?</h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('crave', 'Sweets & desserts', 'have_any_pets')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍰 Sweets &amp; desserts</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('crave', 'Salty snacks', 'have_any_pets')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🥨 Salty snacks</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('crave', 'Bread & carbs', 'have_any_pets')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍞 Bread &amp; carbs</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('crave', 'Fried foods', 'have_any_pets')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍟 Fried foods</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 31. PETS ================= -->
+      <div id="screen-have_any_pets" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Do you have any pets? 🐶</h2>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🐕 Dog</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🐈 Cat</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🦜 Birds</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+          <div onclick="toggleMultiSelect(this)" class="opt-card p-3 rounded-2xl shadow-sm flex items-center justify-between text-sm font-bold">
+            <span>🐴 Horses / Farm</span>
+            <div class="check-icon w-5 h-5 rounded-md border border-gray-300 flex items-center justify-center text-[10px]">✓</div>
+          </div>
+        </div>
+        <button onclick="goToScreen('live_with_now')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+          Continue
+        </button>
+      </div>
+
+      <!-- ================= 32. LIVE WITH NOW ================= -->
+      <div id="screen-live_with_now" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Who do you live with now?</h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('live_with', 'Husband / Partner', 'couldnot_survive_without')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>👫 Husband / Partner</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('live_with', 'On my own', 'couldnot_survive_without')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🏡 On my own</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('live_with', 'With kids / family', 'couldnot_survive_without')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>👨‍👩‍👧 With kids / family</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 33. COULD NOT SURVIVE WITHOUT ================= -->
+      <div id="screen-couldnot_survive_without" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <p class="text-xs uppercase font-bold tracking-wider text-gray-400">Complete this sentence:</p>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">“I couldn't survive without my...”</h2>
+        </div>
+        <div class="space-y-3">
+          <div onclick="selectSingleChoice('appliance', 'Coffee machine', 'your_first_name')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>☕ Coffee machine</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('appliance', 'Air fryer', 'your_first_name')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍟 Air fryer</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('appliance', 'Slow cooker', 'your_first_name')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍲 Slow cooker</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+          <div onclick="selectSingleChoice('appliance', 'Dishwasher', 'your_first_name')" class="opt-card p-4 sm:p-5 rounded-2xl shadow-sm flex items-center justify-between font-bold text-base">
+            <span>🍽️ Dishwasher</span>
+            <span class="text-brand-green">➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 34. FIRST NAME ================= -->
+      <div id="screen-your_first_name" class="quiz-screen hidden space-y-6">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            What is your first name or nickname? 👋
+          </h2>
+          <p class="text-sm text-gray-500">So we can address your plan to you</p>
+        </div>
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <input type="text" id="input-first-name" placeholder="Type your name" class="w-full text-center text-2xl font-bold border-b-2 border-brand-navy pb-2 outline-none focus:border-brand-green">
+          <button onclick="saveNameAndProceed()" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 35. GREAT NEWS WITH NAME ================= -->
+      <div id="screen-great_news_2" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <span class="text-5xl block">🎉</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Great news, <span id="display-user-name">Friend</span>!
+          </h2>
+          <p class="text-base text-gray-600 font-semibold">
+            We've found women just like you in our <strong class="text-brand-green">Cooking Clear</strong> Community!
+          </p>
+          <div class="bg-brand-lightBg p-4 rounded-2xl border border-orange-100 text-sm font-bold text-brand-navy">
+            A thriving group of women over 50 getting healthy together without dieting.
+          </div>
+          <button onclick="goToScreen('congrats')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 36. CONGRATS PRE-QUALIFIED ================= -->
+      <div id="screen-congrats" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <div class="inline-block bg-amber-100 text-amber-800 text-xs font-black uppercase px-4 py-1.5 rounded-full">
+            🏆 Pre-Qualified
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Congratulations!
+          </h2>
+          <p class="text-sm sm:text-base text-gray-600 font-semibold leading-relaxed">
+            You are an ideal match for the <strong class="text-brand-green">Cooking Clear</strong> Hormonal Weight Loss Program!
+          </p>
+          <div class="space-y-3 text-left text-sm font-semibold text-gray-700 bg-brand-lightBg p-4 rounded-2xl border border-orange-100">
+            <div class="flex items-center space-x-2">
+              <span class="text-brand-green font-bold">✓</span>
+              <span>Matched with women with similar health goals</span>
             </div>
-            <div id="check-2" class="flex items-center space-x-2 text-gray-400">
-              <span>⚪</span> <span>Formulating GLP-1 trigger recipes...</span>
+            <div class="flex items-center space-x-2">
+              <span class="text-brand-green font-bold">✓</span>
+              <span>Recipes curated to your taste preferences</span>
             </div>
-            <div id="check-3" class="flex items-center space-x-2 text-gray-400">
-              <span>⚪</span> <span>Finalizing your personalized plan...</span>
+            <div class="flex items-center space-x-2">
+              <span class="text-brand-green font-bold">✓</span>
+              <span>Dedicated coaching support</span>
             </div>
           </div>
+          <button onclick="triggerConfetti(); goToScreen('email')" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-bold py-4 rounded-full shadow-lg transition">
+            See My Plan!
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 37. EMAIL SUBMIT ================= -->
+      <div id="screen-email" class="quiz-screen hidden text-center space-y-6">
+        <div class="quiz-card p-6 sm:p-8 space-y-6">
+          <div class="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center mx-auto text-3xl">
+            ✉️
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">
+            Enter your email to get your personalized plan
+          </h2>
+          <p class="text-sm text-gray-500">
+            Your results, timeline, and weekly recipes will be saved to this address.
+          </p>
+
+          <div class="space-y-4">
+            <input type="email" id="input-email" placeholder="Enter your email address" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-brand-green outline-none text-base text-center font-semibold">
+            <p id="email-error" class="text-xs text-red-500 font-bold hidden">Please enter a valid email address.</p>
+            
+            <button onclick="finishQuiz()" class="w-full bg-brand-green hover:bg-brand-greenHover text-white text-lg font-extrabold py-4 rounded-full shadow-xl transition transform hover:-translate-y-0.5">
+              Unlock My Plan Now ➔
+            </button>
+          </div>
+
+          <p class="text-xs text-gray-400">
+            🔒 We respect your privacy. 100% spam-free guarantee.
+          </p>
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- Footer (NO FACEBOOK, NO INSTAGRAM) -->
-  <footer class="w-full py-6 text-center text-xs text-gray-400 border-t border-amber-100">
-    &copy; <script>document.write(new Date().getFullYear())</script> Cooking Clear. All rights reserved.
+  <!-- ================= FOOTER (NO FACEBOOK, NO INSTAGRAM) ================= -->
+  <footer class="w-full py-6 text-center text-xs text-gray-400 border-t border-orange-100">
+    <div class="max-w-xl mx-auto px-4 flex justify-between items-center text-gray-500 font-semibold">
+      <span>Cooking Clear</span>
+      <div class="space-x-3 text-xs">
+        <a href="index.html" class="hover:text-brand-navy">Home</a>
+        <a href="#" class="hover:text-brand-navy">Privacy</a>
+        <a href="#" class="hover:text-brand-navy">Terms</a>
+      </div>
+    </div>
   </footer>
 
-  <!-- ================= LOGIC & CALCULATIONS ================= -->
+  <!-- ================= QUIZ ENGINE SCRIPT ================= -->
   <script>
-    let currentStep = 1;
-    const totalSteps = 9;
-    let selectedGoal = "Lose weight and feel more confident";
-    let heightUnit = "ft";
-    let weightUnit = "lbs";
+    // Quiz State
+    const quizState = {
+      history: ['discover'],
+      currentScreen: 'discover',
+      userName: '',
+      heightUnit: 'ft',
+      weightUnit: 'lbs',
+      currentWeight: 180,
+      goalWeight: 145,
+      email: ''
+    };
 
-    function updateProgress(step) {
-      const container = document.getElementById('progress-container');
-      const bar = document.getElementById('progress-bar');
-      if (step > 1 && step < 9) {
-        container.classList.remove('hidden');
-        const percent = Math.min(100, Math.round((step / 8) * 100));
-        bar.style.width = percent + '%';
+    const screenOrder = [
+      'discover', 'welcome', 'after_glp1_1', 'lose_weight',
+      'health_challenge', 'height', 'weight', 'target',
+      'main_reason_for_wanting', 'hormonal_weight_loss', 'loading_1',
+      'first_goal_setting', 'goal_without_plan', 'dish_sandwich',
+      'dish_bacon', 'dish_bean_salad', 'dish_casserole',
+      'dish_protein_salad', 'cuisines', 'meals',
+      'experienced_in_kitchen', 'commit_to_cook', 'great',
+      'personal_recipe_plan', 'comes_losing_weight',
+      'medications_to_manage', 'get_the_support', 'did_you_know',
+      'your_hobbies', 'crave_the_most', 'have_any_pets',
+      'live_with_now', 'couldnot_survive_without', 'your_first_name',
+      'great_news_2', 'congrats', 'email'
+    ];
+
+    function updateProgressBar() {
+      const idx = screenOrder.indexOf(quizState.currentScreen);
+      const total = screenOrder.length;
+      const progress = Math.min(100, Math.round(((idx + 1) / total) * 100));
+      document.getElementById('quiz-progress-bar').style.width = progress + '%';
+
+      const backBtn = document.getElementById('btn-back');
+      if (quizState.history.length > 1) {
+        backBtn.classList.remove('invisible');
       } else {
-        container.classList.add('hidden');
+        backBtn.classList.add('invisible');
       }
     }
 
-    function nextStep(stepNumber) {
-      document.querySelectorAll('.quiz-step').forEach(el => el.classList.add('hidden'));
-      const target = document.getElementById('step-' + stepNumber);
+    function goToScreen(screenId) {
+      document.querySelectorAll('.quiz-screen').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById('screen-' + screenId);
       if (target) {
         target.classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      currentStep = stepNumber;
-      updateProgress(stepNumber);
 
-      if (stepNumber === 6) {
-        calculateBMI();
+      quizState.currentScreen = screenId;
+      if (quizState.history[quizState.history.length - 1] !== screenId) {
+        quizState.history.push(screenId);
       }
-      if (stepNumber === 7) {
-        calculateGoalLoss();
-      }
-      if (stepNumber === 9) {
-        startLoadingAnimation();
+
+      updateProgressBar();
+
+      // Screen specific hooks
+      if (screenId === 'weight') runBmiCalculation();
+      if (screenId === 'target') runGoalCalculation();
+      if (screenId === 'loading_1') handleLoading1();
+    }
+
+    function prevScreen() {
+      if (quizState.history.length > 1) {
+        quizState.history.pop();
+        const prev = quizState.history[quizState.history.length - 1];
+        document.querySelectorAll('.quiz-screen').forEach(el => el.classList.add('hidden'));
+        document.getElementById('screen-' + prev).classList.remove('hidden');
+        quizState.currentScreen = prev;
+        updateProgressBar();
       }
     }
 
-    function selectGoal(goal, next) {
-      selectedGoal = goal;
-      nextStep(next);
+    function selectSingleChoice(key, val, nextScreen) {
+      quizState[key] = val;
+      goToScreen(nextScreen);
     }
 
-    function switchHeightUnit(unit) {
-      heightUnit = unit;
-      const btnFt = document.getElementById('btn-unit-ft');
-      const btnCm = document.getElementById('btn-unit-cm');
-      const ftDiv = document.getElementById('height-ft-inputs');
-      const cmDiv = document.getElementById('height-cm-inputs');
+    function toggleMultiSelect(el) {
+      el.classList.toggle('selected');
+    }
 
-      if (unit === 'ft') {
+    function setHeightUnit(u) {
+      quizState.heightUnit = u;
+      const btnFt = document.getElementById('tab-ht-ft');
+      const btnCm = document.getElementById('tab-ht-cm');
+      const boxFt = document.getElementById('box-ht-ft');
+      const boxCm = document.getElementById('box-ht-cm');
+
+      if (u === 'ft') {
         btnFt.className = "px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white";
         btnCm.className = "px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700";
-        ftDiv.classList.remove('hidden');
-        cmDiv.classList.add('hidden');
+        boxFt.classList.remove('hidden');
+        boxCm.classList.add('hidden');
       } else {
         btnCm.className = "px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white";
         btnFt.className = "px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700";
-        cmDiv.classList.remove('hidden');
-        ftDiv.classList.add('hidden');
+        boxCm.classList.remove('hidden');
+        boxFt.classList.add('hidden');
       }
     }
 
-    function switchWeightUnit(unit) {
-      weightUnit = unit;
-      const btnLbs = document.getElementById('btn-weight-lbs');
-      const btnKg = document.getElementById('btn-weight-kg');
-      const labelWeight = document.getElementById('label-weight-unit');
-      const labelGoal = document.getElementById('label-goal-unit');
-      const currentInput = document.getElementById('input-current-weight');
-      const goalInput = document.getElementById('input-goal-weight');
+    function setWeightUnit(u) {
+      quizState.weightUnit = u;
+      const btnLbs = document.getElementById('tab-wt-lbs');
+      const btnKg = document.getElementById('tab-wt-kg');
+      const curLabel = document.getElementById('unit-cur-label');
+      const goalLabel = document.getElementById('unit-goal-label');
+      const curInput = document.getElementById('val-cur-weight');
+      const goalInput = document.getElementById('val-goal-weight');
 
-      if (unit === 'lbs') {
+      if (u === 'lbs') {
         btnLbs.className = "px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white";
         btnKg.className = "px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700";
-        labelWeight.innerText = "LBS";
-        labelGoal.innerText = "LBS";
-        currentInput.value = "180";
-        goalInput.value = "145";
+        curLabel.innerText = "LBS";
+        goalLabel.innerText = "LBS";
+        curInput.value = 180;
+        goalInput.value = 145;
       } else {
         btnKg.className = "px-5 py-2 rounded-full font-bold text-sm bg-brand-green text-white";
         btnLbs.className = "px-5 py-2 rounded-full font-bold text-sm bg-gray-200 text-gray-700";
-        labelWeight.innerText = "KG";
-        labelGoal.innerText = "KG";
-        currentInput.value = "82";
-        goalInput.value = "66";
+        curLabel.innerText = "KG";
+        goalLabel.innerText = "KG";
+        curInput.value = 82;
+        goalInput.value = 66;
       }
-      calculateBMI();
-      calculateGoalLoss();
+      runBmiCalculation();
+      runGoalCalculation();
     }
 
-    function calculateBMI() {
-      const weightVal = parseFloat(document.getElementById('input-current-weight').value) || 0;
-      let heightInMeters = 1.65;
+    function runBmiCalculation() {
+      const weightVal = parseFloat(document.getElementById('val-cur-weight').value) || 0;
+      quizState.currentWeight = weightVal;
+      let heightM = 1.65;
       
-      if (heightUnit === 'ft') {
-        const ft = parseFloat(document.getElementById('input-ft').value) || 5;
-        const inc = parseFloat(document.getElementById('input-in').value) || 5;
-        const totalInches = (ft * 12) + inc;
-        heightInMeters = totalInches * 0.0254;
+      if (quizState.heightUnit === 'ft') {
+        const ft = parseFloat(document.getElementById('val-ft').value) || 5;
+        const inc = parseFloat(document.getElementById('val-in').value) || 5;
+        heightM = ((ft * 12) + inc) * 0.0254;
       } else {
-        const cm = parseFloat(document.getElementById('input-cm').value) || 165;
-        heightInMeters = cm / 100;
+        const cm = parseFloat(document.getElementById('val-cm').value) || 165;
+        heightM = cm / 100;
       }
 
-      let weightInKg = weightUnit === 'lbs' ? weightVal * 0.453592 : weightVal;
-      let bmi = (weightInKg / (heightInMeters * heightInMeters)).toFixed(1);
+      let kg = quizState.weightUnit === 'lbs' ? weightVal * 0.453592 : weightVal;
+      let bmi = (kg / (heightM * heightM)).toFixed(1);
       
-      const bmiBox = document.getElementById('bmi-box');
+      const box = document.getElementById('box-bmi-feedback');
       if (isNaN(bmi) || bmi <= 0) return;
 
-      let category = "Normal weight";
-      let colorClass = "text-green-600";
+      let cat = "Normal weight";
+      let col = "text-green-600";
       if (bmi >= 25 && bmi < 30) {
-        category = "Overweight";
-        colorClass = "text-amber-600";
+        cat = "Overweight";
+        col = "text-amber-600";
       } else if (bmi >= 30) {
-        category = "High BMI (Significant fat-loss potential)";
-        colorClass = "text-red-600";
+        cat = "High metabolic index";
+        col = "text-red-600";
       }
 
-      bmiBox.innerHTML = `Your estimated BMI is <b>${bmi}</b> (<span class="${colorClass} font-bold">${category}</span>). Cooking Clear is specifically designed for your profile.`;
+      box.innerHTML = `Your BMI is <b>${bmi}</b> (<span class="${col} font-bold">${cat}</span>). Cooking Clear is formulated for this baseline.`;
     }
 
-    function calculateGoalLoss() {
-      const current = parseFloat(document.getElementById('input-current-weight').value) || 180;
-      const goal = parseFloat(document.getElementById('input-goal-weight').value) || 145;
-      const box = document.getElementById('goal-result-box');
+    function runGoalCalculation() {
+      const cur = parseFloat(document.getElementById('val-cur-weight').value) || 180;
+      const goal = parseFloat(document.getElementById('val-goal-weight').value) || 145;
+      quizState.goalWeight = goal;
 
-      if (goal >= current) {
-        box.className = "p-4 rounded-xl bg-amber-50 border border-amber-200 text-center text-sm font-semibold text-amber-700";
-        box.innerText = "Please select a goal weight lower than your current weight.";
+      const box = document.getElementById('box-goal-feedback');
+      if (goal >= cur) {
+        box.innerText = "Please enter a target lower than your current weight.";
+        box.className = "p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center text-sm font-semibold text-amber-700";
         return;
       }
 
-      const diff = (current - goal).toFixed(0);
-      const percent = (((current - goal) / current) * 100).toFixed(1);
-      box.className = "p-4 rounded-xl bg-green-50 border border-green-200 text-center text-base font-bold text-brand-green";
-      box.innerText = `You will lose ${diff} ${weightUnit} (${percent}% of body weight) with your custom plan!`;
+      const diff = (cur - goal).toFixed(0);
+      const pct = (((cur - goal) / cur) * 100).toFixed(1);
+      box.className = "p-4 rounded-2xl bg-green-50 border border-green-200 text-center text-base font-bold text-brand-green";
+      box.innerText = `You will lose ${diff} ${quizState.weightUnit} (${pct}% of body weight).`;
+
+      // Update goal prediction on screen 12
+      const firstPred = document.getElementById('first-goal-pred');
+      if (firstPred) {
+        const monthLoss = Math.min(diff, Math.round(diff * 0.35) || 10);
+        firstPred.innerHTML = `Based on your answers, we predict you'll <span class="text-brand-blue">lose ${monthLoss} ${quizState.weightUnit} in the next 28 days*</span>`;
+      }
     }
 
-    function startLoadingAnimation() {
-      let percent = 0;
-      const circle = document.getElementById('loading-circle');
-      const text = document.getElementById('loading-percentage');
-      const status = document.getElementById('loading-status-text');
-      const check1 = document.getElementById('check-1');
-      const check2 = document.getElementById('check-2');
-      const check3 = document.getElementById('check-3');
+    function handleLoading1() {
+      setTimeout(() => {
+        document.getElementById('l1-p2').className = "text-brand-green font-bold";
+        document.getElementById('l1-p2').innerText = "✓ Created prediction based on your profile...";
+      }, 1200);
 
-      const interval = setInterval(() => {
-        percent += 2;
-        text.innerText = percent + '%';
-        const offset = 264 - (264 * percent / 100);
-        circle.style.strokeDashoffset = offset;
+      setTimeout(() => {
+        document.getElementById('l1-p3').className = "text-brand-green font-bold";
+        document.getElementById('l1-p3').innerText = "✓ Setting up your first goal...";
+      }, 2400);
 
-        if (percent === 30) {
-          check1.innerHTML = '<span>✅</span> <span class="text-brand-navy font-bold">Hormonal and age factors mapped.</span>';
-          status.innerText = "Formulating GLP-1 trigger recipes...";
-        }
-        if (percent === 65) {
-          check2.innerHTML = '<span>✅</span> <span class="text-brand-navy font-bold">Weekly meals &amp; grocery plans created.</span>';
-          status.innerText = "Finalizing your personal plan...";
-        }
-        if (percent === 95) {
-          check3.innerHTML = '<span>✅</span> <span class="text-brand-navy font-bold">Your Cooking Clear plan is ready!</span>';
-        }
-
-        if (percent >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            const current = document.getElementById('input-current-weight').value || '180';
-            const goal = document.getElementById('input-goal-weight').value || '145';
-            window.location.href = `paywall.html?current=${current}&goal=${goal}&unit=${weightUnit}`;
-          }, 800);
-        }
-      }, 50);
+      setTimeout(() => {
+        goToScreen('first_goal_setting');
+      }, 3500);
     }
+
+    function saveNameAndProceed() {
+      const name = document.getElementById('input-first-name').value.trim() || 'Friend';
+      quizState.userName = name;
+      document.getElementById('display-user-name').innerText = name;
+      goToScreen('great_news_2');
+    }
+
+    function triggerConfetti() {
+      if (window.confetti) {
+        window.confetti({ particleCount: 120, spread: 140, origin: { y: 0.6 } });
+      }
+    }
+
+    function finishQuiz() {
+      const email = document.getElementById('input-email').value.trim();
+      const err = document.getElementById('email-error');
+      
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        err.classList.remove('hidden');
+        return;
+      }
+      err.classList.add('hidden');
+      quizState.email = email;
+
+      // Save state to localStorage for persistence
+      localStorage.setItem('cooking_clear_user', JSON.stringify(quizState));
+
+      // Navigate to paywall with personalized URL parameters
+      window.location.href = `paywall.html?name=${encodeURIComponent(quizState.userName)}&current=${quizState.currentWeight}&goal=${quizState.goalWeight}&unit=${quizState.weightUnit}&email=${encodeURIComponent(email)}`;
+    }
+
+    // Initialize progress bar on load
+    updateProgressBar();
   </script>
 
 </body>
