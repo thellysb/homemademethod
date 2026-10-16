@@ -69,7 +69,7 @@
   <!-- ======================================================== -->
   <script>
     // ⚙️ DEFINA AQUI O SEU LINK DE CHECKOUT FINAL (OU INTEGRAÇÃO):
-    const CHECKOUT_BASE_URL = "https://checkout.cooud.com/01M513TEZTGFMMHB3B60QC41TC";
+    const CHECKOUT_BASE_URL = "https://pay.hotmart.com/SEU_CHECKOUT_AQUI";
   </script>
 </head>
 <body class="overflow-x-hidden">
@@ -254,23 +254,41 @@
 
       <!-- Main Plan Button -->
       <div class="pt-3">
-        <a id="btn-submit-order" href="#checkout-area" class="block w-full text-center bg-brand-green hover:bg-brand-greenHover text-white font-extrabold text-xl py-4 rounded-full shadow-xl transition transform hover:-translate-y-0.5">
-          Get My Personalized Plan
+        <a id="btn-submit-order" href="https://checkout.cooud.com/01M513TEZTGFMMHB3B60QC41TC" onclick="handleCheckoutClick(event)" class="block w-full text-center bg-brand-green hover:bg-brand-greenHover text-white font-extrabold text-xl py-4 rounded-full shadow-xl transition transform hover:-translate-y-0.5 cursor-pointer">
+          Get My Personalized Plan &rarr;
         </a>
       </div>
     </div>
 
-    <!-- Checkout Simulated Area -->
+    <!-- Safe Checkout Area -->
     <div id="checkout-area" class="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-orange-100 space-y-6">
       <div class="text-center space-y-1">
-        <h3 class="text-2xl font-black text-brand-navy">Guaranteed Safe Checkout</h3>
-        <p class="text-xs text-gray-400">All transactions are encrypted with 256-bit SSL protocol</p>
+        <div class="inline-flex items-center space-x-1.5 bg-green-50 text-brand-green text-xs font-bold px-3 py-1 rounded-full border border-green-200">
+          <span>🔒 256-Bit SSL Encrypted</span>
+        </div>
+        <h3 class="text-2xl font-black text-brand-navy pt-2">Guaranteed Safe Checkout</h3>
+        <p class="text-xs text-gray-400">Complete your order securely on our encrypted checkout portal</p>
       </div>
 
-      <!-- Payment Methods Selector -->
-      <div class="grid grid-cols-3 gap-3 text-center">
-        <div class="p-3 border-2 border-brand-green rounded-xl bg-green-50/50 font-bold text-xs flex flex-col items-center justify-center space-y-1">
-          <span>💳 Credit Card</span>
+      <!-- Selected Plan Summary Card -->
+      <div class="bg-brand-warmBg rounded-2xl p-4 border border-orange-100 space-y-2">
+        <div class="flex items-center justify-between">
+          <span id="summary-plan-name" class="font-bold text-sm text-brand-navy">6-Monthly Membership Plan</span>
+          <span id="summary-plan-price" class="font-extrabold text-base text-brand-green">$129.00</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-200/60 pt-2">
+          <span>Digital Access to Cooking Clear Club</span>
+          <span class="text-brand-green font-bold">Instant Delivery</span>
+        </div>
+        <div id="summary-user-email" class="text-xs text-gray-500 hidden pt-1">
+          Delivery to: <b class="text-gray-700" id="display-checkout-email"></b>
+        </div>
+      </div>
+
+      <!-- Payment Methods Badges -->
+      <div class="grid grid-cols-3 gap-2.5 text-center">
+        <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 font-bold text-xs flex flex-col items-center justify-center space-y-1">
+          <span>💳 Credit / Debit</span>
         </div>
         <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 font-bold text-xs flex flex-col items-center justify-center space-y-1">
           <span>🍎 Apple Pay</span>
@@ -280,38 +298,19 @@
         </div>
       </div>
 
-      <!-- Input Fields -->
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Email for Plan Delivery</label>
-          <input type="email" placeholder="your@email.com" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-brand-green outline-none text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Cardholder Name</label>
-          <input type="text" placeholder="Full name on card" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-brand-green outline-none text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Card Number</label>
-          <input type="text" placeholder="•••• •••• •••• ••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-brand-green outline-none text-sm">
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">Expiry</label>
-            <input type="text" placeholder="MM / YY" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-brand-green outline-none text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">CVC / CVV</label>
-            <input type="text" placeholder="123" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-brand-green outline-none text-sm">
-          </div>
-        </div>
-
-        <button onclick="alert('Conecte esta ação à sua plataforma de checkout (Stripe, Hotmart, Eduzz, etc)!')" class="w-full bg-brand-navy hover:bg-black text-white font-black text-lg py-4 rounded-xl shadow-lg transition">
-          Confirm Purchase Now
-        </button>
+      <!-- Big Direct Checkout CTA -->
+      <div>
+        <a id="btn-final-checkout" href="https://checkout.cooud.com/01M513TEZTGFMMHB3B60QC41TC" onclick="handleCheckoutClick(event)" class="w-full bg-brand-green hover:bg-brand-greenHover text-white font-black text-xl py-4 rounded-full shadow-xl transition flex items-center justify-center space-x-2 text-center transform hover:-translate-y-0.5 cursor-pointer">
+          <span>Proceed to Secure Checkout</span>
+          <span>&rarr;</span>
+        </a>
+        <p class="text-[11px] text-gray-400 text-center mt-2">
+          By proceeding, you will be redirected to our secure payment gateway powered by Cooud.
+        </p>
       </div>
 
       <!-- Guarantee Ribbon -->
-      <div class="flex items-center justify-center space-x-2 text-xs font-bold text-gray-500 pt-2">
+      <div class="flex items-center justify-center space-x-2 text-xs font-bold text-gray-500 pt-2 border-t border-gray-100">
         <svg class="w-4 h-4 text-brand-green" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
         </svg>
@@ -402,11 +401,26 @@
 
   <!-- ================= TIMER & PLAN LOGIC ================= -->
   <script>
+    // Cooud Checkout Configuration
+    const CHECKOUT_URL = "https://checkout.cooud.com/01M513TEZTGFMMHB3B60QC41TC";
+
     // URL Params reader (from quiz)
     const urlParams = new URLSearchParams(window.location.search);
     const currentWeight = urlParams.get('current') || '180';
     const goalWeight = urlParams.get('goal') || '145';
     const unit = urlParams.get('unit') || 'lbs';
+    const userEmail = urlParams.get('email') || '';
+    const userName = urlParams.get('name') || '';
+
+    // Show email in summary if available
+    if (userEmail) {
+      const emailBox = document.getElementById('summary-user-email');
+      const emailDisplay = document.getElementById('display-checkout-email');
+      if (emailBox && emailDisplay) {
+        emailDisplay.innerText = userEmail;
+        emailBox.classList.remove('hidden');
+      }
+    }
 
     const diff = Math.max(10, Math.round(parseFloat(currentWeight) - parseFloat(goalWeight)));
     
@@ -422,19 +436,44 @@
 
     // Plan selector
     let selectedPlanId = 2;
+    const planDetails = {
+      1: { name: "3-Monthly Membership Plan", price: "$77.00", hint: "💡 People using Cooking Clear for 3 months lose twice as much weight as for 1 month." },
+      2: { name: "6-Monthly Membership Plan (Most Popular)", price: "$129.00", hint: "💖 6 months gives your hormones the natural time to permanently reset." },
+      3: { name: "1-Year Membership Plan", price: "$159.00", hint: "🏆 1 Year is the ultimate lifestyle transformation for lifelong health and vitality." }
+    };
+
     function selectPlan(id) {
       selectedPlanId = id;
       document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
       document.getElementById('plan-' + id).classList.add('selected');
 
-      const hint = document.getElementById('plan-hint');
-      if (id === 1) {
-        hint.innerHTML = "💡 People using Cooking Clear for 3 months lose twice as much weight as for 1 month.";
-      } else if (id === 2) {
-        hint.innerHTML = "💖 6 months gives your hormones the natural time to permanently reset.";
-      } else {
-        hint.innerHTML = "🏆 1 Year is the ultimate lifestyle transformation for lifelong health and vitality.";
+      const plan = planDetails[id];
+      if (plan) {
+        document.getElementById('plan-hint').innerHTML = plan.hint;
+        const sumName = document.getElementById('summary-plan-name');
+        const sumPrice = document.getElementById('summary-plan-price');
+        if (sumName) sumName.innerText = plan.name;
+        if (sumPrice) sumPrice.innerText = plan.price;
       }
+    }
+
+    // Checkout Redirection Handler
+    function getCheckoutRedirectUrl() {
+      let target = CHECKOUT_URL;
+      const params = new URLSearchParams();
+      if (userEmail) params.append('email', userEmail);
+      if (userName) params.append('name', userName);
+      
+      const qs = params.toString();
+      if (qs) {
+        target += (target.includes('?') ? '&' : '?') + qs;
+      }
+      return target;
+    }
+
+    function handleCheckoutClick(e) {
+      if (e) e.preventDefault();
+      window.location.href = getCheckoutRedirectUrl();
     }
 
     // Countdown Timer (5:00)
